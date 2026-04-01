@@ -1,0 +1,49 @@
+{
+  "name": "electronic-app-vue",
+  "version": "1.0.0",
+  "description": "Electron智能客服聊天应用 - Vue重构版",
+  "main": "dist-electron/main/main.cjs",
+  "type": "module",
+  "author": "Electronic App Team",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "electron:dev": "electron-vite dev",
+    "electron:build": "electron-vite build",
+    "electron:preview": "electron .",
+    "electron:package": "electron-builder --win --dir"
+  },
+  "build": {
+    "appId": "com.electronic-app.vue",
+    "productName": "智能客服聊天",
+    "copyright": "Copyright © 2026 ${author}",
+    "directories": {
+      "output": "dist-electron/builder"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*"
+    ]
+  },
+  "dependencies": {
+    "axios": "^1.14.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "highlight.js": "^11.8.0",
+    "marked": "^9.1.2",
+    "pinia": "^2.1.6",
+    "uuid": "^9.0.0",
+    "vue": "^3.3.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.3.4",
+    "electron": "^25.3.1",
+    "electron-builder": "^26.8.1",
+    "electron-vite": "^5.0.0",
+    "unplugin-vue-components": "^0.25.1",
+    "vite": "^5.0.0"
+  }
+}
