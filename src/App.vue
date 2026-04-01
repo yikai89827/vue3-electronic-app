@@ -138,10 +138,27 @@ const sendMessage = async () => {
 
   try {
     isLoading.value = true
-    // 发送请求到后端
-    const aiResponse = await callQwenAPI(message, activeChat.value.messages)
-    // 添加AI回复
-    chatStore.addMessage(activeChatId.value, 'assistant', aiResponse)
+    
+    // 为AI回复创建一个临时ID
+    const aiMessageId = Date.now()
+    // 添加一个空的AI回复，用于实时更新
+    chatStore.addMessage(activeChatId.value, 'assistant', '')
+    
+    // 发送流式请求到后端
+    await callQwenAPI(message, activeChat.value.messages, (chunk, fullResponse) => {
+      // 更新AI回复内容
+      const messages = [...activeChat.value.messages]
+      // 找到最后一条AI消息并更新内容
+      for (let i = messages.length - 1; i >= 0; i--) {
+        if (messages[i].role === 'assistant') {
+          messages[i].content = fullResponse
+          break
+        }
+      }
+      // 更新聊天存储
+      chatStore.updateMessages(activeChatId.value, messages)
+    })
+    
   } catch (error) {
     console.error('发送消息失败:', error)
     chatStore.addMessage(activeChatId.value, 'assistant', `抱歉，发送消息时出现错误。请检查网络连接或稍后再试`)

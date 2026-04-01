@@ -80,7 +80,7 @@ function createWindow() {
       res.json({ status: 'OK', message: 'AI Chatbot Proxy Server is running' })
     })
     
-    // 代理通义千问API
+    // 代理通义千问API - 支持流式返回
     expressApp.post('/api/chat', async (req, res) => {
       try {
         const { messages, temperature = 0.7 } = req.body
@@ -94,23 +94,70 @@ function createWindow() {
           return res.status(500).json({ error: 'API key not configured' })
         }
 
+        // 设置响应头为SSE格式
+        res.setHeader('Content-Type', 'text/event-stream')
+        res.setHeader('Cache-Control', 'no-cache')
+        res.setHeader('Connection', 'keep-alive')
+
+        // 发送流式请求
         const response = await axios.post(
           'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation',
           {
             model: 'qwen-turbo',
             input: { messages },
-            parameters: { temperature }
+            parameters: { temperature },
+            stream: true // 启用流式返回
           },
           {
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${apiKey}`
             },
-            timeout: 30000 // 30秒超时
+            timeout: 60000, // 增加超时时间
+            responseType: 'stream' // 响应类型设置为流
           }
         )
 
-        res.json(response.data)
+        // 处理流式响应
+        response.data.on('data', (chunk) => {
+          try {
+            const chunkStr = chunk.toString()
+            // 分割SSE格式的消息
+            const lines = chunkStr.split('\n')
+            
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                const dataStr = line.substring(6)
+                if (dataStr === '[DONE]') {
+                  // 流式结束
+                  res.write('data: [DONE]\n\n')
+                  res.end()
+                  return
+                }
+                
+                try {
+                  const data = JSON.parse(dataStr)
+                  // 发送数据到前端
+                  res.write(`data: ${JSON.stringify(data)}\n\n`)
+                } catch (parseError) {
+                  console.error('Parse error:', parseError)
+                }
+              }
+            }
+          } catch (error) {
+            console.error('Stream processing error:', error)
+          }
+        })
+
+        response.data.on('error', (error) => {
+          console.error('Stream error:', error)
+          res.status(500).end()
+        })
+
+        response.data.on('end', () => {
+          res.end()
+        })
+
       } catch (error) {
         console.error('Proxy error:', error.response?.data || error.message)
         

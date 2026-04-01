@@ -89,6 +89,16 @@ export const useChatStore = defineStore('chat', {
         
         this.saveChats()
       }
+    },
+    
+    // 更新聊天消息
+    updateMessages(chatId, messages) {
+      const chat = this.chats.find(chat => chat.id === chatId)
+      if (chat) {
+        chat.messages = messages
+        chat.updatedAt = new Date().toISOString()
+        this.saveChats()
+      }
     }
   }
 })
