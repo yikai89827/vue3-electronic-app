@@ -11,10 +11,19 @@ const isDev = process.env.NODE_ENV === 'development'
 
 // 确定应用路径
 let appPath = app.getAppPath()
+console.log('Original app path:', appPath)
+
 // 检查是否在asar包中
 if (appPath.includes('app.asar')) {
-  appPath = path.join(appPath, '..')
+  // 在asar包中，dist目录应该在asar包内
+  console.log('Running from asar package')
+  // 对于asar包，app.getAppPath() 会返回asar包的路径，如：C:\path\to\app.asar
+  // 我们可以直接使用这个路径，因为Node.js可以直接访问asar包内的文件
+} else {
+  // 不在asar包中，使用原始路径
+  console.log('Running from directory')
 }
+console.log('Final app path:', appPath)
 
 let mainWindow
 

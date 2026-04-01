@@ -23,8 +23,8 @@
       "output": "dist-electron/builder"
     },
     "files": [
-      "dist/**/*",
-      "dist-electron/**/*"
+      "dist",
+      "dist-electron"
     ],
     "win": {
       "signAndEditExecutable": false
